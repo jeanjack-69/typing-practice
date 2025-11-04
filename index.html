@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Typing Practice</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Inconsolata&family=Source+Code+Pro&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.min.js"></script>
+</head>
+<body>
+
+    <div class="user-profile-container">
+        <div id="g_id_signin"></div>
+        <div id="userInfo" class="hidden">
+            <img id="userPicture" src="" alt="User">
+            <span id="userName"></span>
+            <button id="logoutButton">Logout</button>
+            <button id="settingsButton">Settings</button>
+        </div>
+        <div id="allToggles">
+            <div class="toggle-container">
+                <span>Light</span>
+                <input type="checkbox" id="darkModeToggle" class="toggle-checkbox">
+                <label for="darkModeToggle" class="toggle-label"></label>
+                <span>Dark</span>
+            </div>
+            <div class="toggle-container" id="practiceModeContainer">
+                <span>Adaptive</span>
+                <input type="checkbox" id="practiceModeToggle" class="toggle-checkbox">
+                <label for="practiceModeToggle" class="toggle-label"></label>
+                <span>File Practice</span>
+            </div>
+            <div class="toggle-container" id="wordModeContainer">
+                <span>Meaningful</span>
+                <input type="checkbox" id="wordModeToggle" class="toggle-checkbox">
+                <label for="wordModeToggle" class="toggle-label"></label>
+                <span>Nonsense</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="settingsPanel" class="hidden">
+        <div class="settings-header">
+            <h3>Settings</h3>
+            <button id="closeSettingsButton">X</button>
+        </div>
+        
+        <h4>Background</h4>
+        <div class="settings-group" id="bg-selector">
+            <button class="bg-swatch" data-bg="default" style="background: var(--bg-color); border: 1px solid var(--text-color);"></button>
+            <button class="bg-swatch" data-bg="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"></button>
+            <button class="bg-swatch" data-bg="linear-gradient(135deg, #20002c 0%, #cbb4d4 100%)"></button>
+            <button class="bg-swatch" data-bg="linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)"></button>
+            <button class="bg-swatch" data-bg="linear-gradient(135deg, #1d2b64 0%, #f8cdda 100%)"></button>
+            <button class="bg-swatch" data-bg="linear-gradient(135deg, #141e30 0%, #243b55 100%)"></button>
+        </div>
+        
+        <div class="settings-group-horizontal">
+            <div class="settings-group">
+                <label for="customBgInput">Custom URL:</label>
+                <input type="text" id="customBgInput" placeholder="https://...">
+            </div>
+            <div class="settings-group">
+                <label for="customBgUpload" class="button-label">Upload</label>
+                <input type="file" id="customBgUpload" accept="image/*">
+            </div>
+        </div>
+        
+        <h4>Lesson Font</h4>
+        <div class="settings-group">
+            <label for="fontSelect">Font Family:</label>
+            <select id="fontSelect">
+                <option value="'Courier New', Courier, monospace">Courier New</option>
+                <option value="'Roboto Mono', monospace">Roboto Mono</option>
+                <option value="'Inconsolata', monospace">Inconsolata</option>
+                <option value="'Source Code Pro', monospace">Source Code Pro</option>
+            </select>
+        </div>
+        <div class="settings-group">
+            <label for="fontSizeSlider">Font Size: <span id="fontSizeValue">28px</span></label>
+            <input type="range" id="fontSizeSlider" min="20" max="40" value="28">
+        </div>
+    </div>
+    <h1>Start Typing!</h1>
+
+    <div class="stats">
+        <div class="stat">
+            <div>WPM</div>
+            <div id="wpm">0</div>
+        </div>
+        <div class="stat">
+            <div>Accuracy</div>
+            <div id="accuracy">100%</div>
+        </div>
+        <div class="stat">
+            <div>Avg WPM</div>
+            <div id="avgWpm">0</div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div id="fileUploadContainer">
+            <label for="fileInput">Upload .txt or .pdf:</label>
+            <input type="file" id="fileInput" accept=".txt,.pdf">
+        </div>
+        <div class="toggle-container" id="customLetterToggleContainer">
+            <span>Default Lessons</span>
+            <input type="checkbox" id="customLetterToggle" class="toggle-checkbox">
+            <label for="customLetterToggle" class="toggle-label"></label>
+            <span>Custom</span>
+        </div>
+        <div id="customLetterInputContainer">
+            <label for="customLettersInput">Practice these letters:</label>
+            <input type="text" id="customLettersInput" placeholder="e.g., asdfjkl">
+        </div>
+    </div>
+
+    <div id="lesson">
+        </div>
+
+    <div class="lesson-nav">
+        <button id="skipBackButton">« Back</button>
+        <button id="resetButton">Reset</button>
+        <button id="skipForwardButton">Next »</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

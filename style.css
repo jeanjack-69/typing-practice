@@ -1,0 +1,368 @@
+/* --- Color Variables --- */
+:root {
+    --bg-image: none;
+    --lesson-font-family: 'Courier New', Courier, monospace;
+    --lesson-font-size: 28px;
+    --bg-color: #f0f0f0;
+    --text-color: #333;
+    --box-bg-color: #ffffff;
+    --box-shadow-color: rgba(0,0,0,0.1);
+    --stat-label-color: #555;
+    --lesson-border-color: #ccc;
+    --letter-color: #888;
+    --current-bg: #ffff99;
+    --current-text: #000;
+    --correct-color: #4caf50;
+    --incorrect-color: #f44336;
+    --toggle-bg: #ccc;
+    --toggle-knob: #fff;
+    --button-bg: #e0e0e0;
+    --button-text: #333;
+    --reset-bg: #f44336;
+    --reset-text: #fff;
+    --input-bg: #eee;
+    --input-border: #ccc;
+    --input-text: #000;
+}
+
+/* --- Dark Mode Colors --- */
+body.dark-mode {
+    --bg-color: #2b2b2b;
+    --text-color: #f0f0f0;
+    --box-bg-color: #424242;
+    --box-shadow-color: rgba(255,255,255,0.1);
+    --stat-label-color: #ccc;
+    --lesson-border-color: #555;
+    --letter-color: #999;
+    --current-bg: #5a5a2a;
+    --current-text: #f0f0f0;
+    --correct-color: #66bb6a;
+    --incorrect-color: #ef5350;
+    --toggle-bg: #555;
+    --toggle-knob: #ccc;
+    --button-bg: #555;
+    --button-text: #f0f0f0;
+    --reset-bg: #ef5350;
+    --reset-text: #fff;
+    --input-bg: #555;
+    --input-border: #777;
+    --input-text: #fff;
+}
+
+/* --- User Profile & Toggles Container --- */
+.user-profile-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+    background-color: var(--box-bg-color);
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px var(--box-shadow-color);
+    z-index: 10;
+}
+#userInfo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+#userInfo img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+#userInfo span {
+    font-weight: bold;
+}
+#logoutButton, #settingsButton {
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    border-radius: 6px;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+#allToggles {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+}
+.hidden {
+    display: none !important;
+}
+
+/* --- Settings Panel --- */
+#settingsPanel {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 300px;
+    background-color: var(--box-bg-color);
+    border-radius: 12px;
+    box-shadow: 0 4px 10px var(--box-shadow-color);
+    z-index: 10;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--lesson-border-color);
+    padding-bottom: 10px;
+}
+.settings-header h3 {
+    margin: 0;
+}
+#closeSettingsButton {
+    background: none;
+    border: none;
+    color: var(--text-color);
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.settings-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.settings-group label {
+    font-weight: bold;
+    font-size: 14px;
+}
+#bg-selector {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+.bg-swatch {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid var(--box-bg-color);
+    cursor: pointer;
+    margin: 3px;
+    background-size: cover;
+}
+.bg-swatch:hover {
+    border-color: var(--correct-color);
+}
+#customBgInput, #fontSelect {
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    padding: 5px 8px;
+    font-family: var(--main-font-family);
+}
+#fontSizeSlider {
+    width: 100%;
+}
+
+/* --- NEW: Settings Upload Button Styles --- */
+.settings-group-horizontal {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 10px;
+}
+.settings-group-horizontal .settings-group {
+    flex-grow: 1;
+}
+#customBgInput {
+    width: 100%;
+    box-sizing: border-box; /* Fixes width issue */
+}
+#customBgUpload {
+    display: none; /* Hide the actual file input */
+}
+.button-label {
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.button-label:hover {
+    filter: brightness(1.1);
+}
+/* --- End of New Styles --- */
+
+
+/* --- Body Styles --- */
+body {
+    background-color: var(--bg-color);
+    background-image: var(--bg-image);
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    color: var(--text-color);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+        Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 5vh; 
+    min-height: 100vh;
+    margin: 0;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+/* --- Stats Styles --- */
+.stats {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    margin-top: 100px; 
+}
+.stat {
+    background-color: var(--box-bg-color);
+    padding: 10px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px var(--box-shadow-color);
+    text-align: center;
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+.stat div:first-child { font-size: 14px; color: var(--stat-label-color); }
+.stat div:last-child { font-size: 28px; font-weight: bold; color: var(--text-color); }
+
+/* --- Controls Styles --- */
+.controls {
+    margin-bottom: 20px;
+    color: var(--text-color);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+/* --- Lesson Styles --- */
+#lesson {
+    background-color: var(--box-bg-color);
+    border: 1px solid var(--lesson-border-color);
+    border-radius: 8px;
+    padding: 20px;
+    width: 80%;
+    max-width: 900px; 
+    font-size: var(--lesson-font-size); 
+    font-family: var(--lesson-font-family);
+    letter-spacing: 2px;
+    line-height: 1.5em;
+    min-height: 3em; 
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+/* --- Letter Styles --- */
+.letter { color: var(--letter-color); }
+.letter.current {
+    background-color: var(--current-bg);
+    border-radius: 3px;
+    color: var(--current-text);
+}
+.letter.correct { color: var(--correct-color); }
+.letter.incorrect { color: var(--incorrect-color); }
+
+/* --- Toggle Switch Styles --- */
+.toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+#fileUploadContainer {
+    display: none; 
+    flex-direction: row; 
+    align-items: center;
+    gap: 10px;
+}
+body.file-mode-active #fileUploadContainer {
+    display: flex;
+}
+body.file-mode-active #wordModeContainer,
+body.file-mode-active #customLetterToggleContainer,
+body.file-mode-active #customLetterInputContainer {
+    display: none;
+}
+#customLetterInputContainer {
+    display: none; 
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+body.custom-mode-active #customLetterInputContainer {
+    display: flex; 
+}
+#customLettersInput {
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    padding: 5px 8px;
+    font-family: 'Courier New', Courier, monospace;
+}
+.toggle-checkbox { display: none; }
+.toggle-label {
+    width: 40px;
+    height: 20px;
+    background-color: var(--toggle-bg);
+    border-radius: 10px;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.toggle-label::after {
+    content: '';
+    width: 16px;
+    height: 16px;
+    background-color: var(--toggle-knob);
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.2s, background-color 0.2s;
+}
+.toggle-checkbox:checked + .toggle-label { background-color: #66bb6a; }
+.toggle-checkbox:checked + .toggle-label::after { transform: translateX(20px); }
+
+/* --- Lesson Navigation Buttons --- */
+.lesson-nav {
+    width: 80%;
+    max-width: 900px;
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+.lesson-nav button {
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+.lesson-nav button:hover { filter: brightness(1.1); }
+.lesson-nav button:active { transform: scale(0.98); }
+
+/* Reset Button Style */
+#resetButton {
+    background-color: var(--reset-bg);
+    color: var(--reset-text);
+}
+#resetButton:hover {
+    filter: brightness(1.2);
+}
