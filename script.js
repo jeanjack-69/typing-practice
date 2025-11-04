@@ -42,7 +42,7 @@ let googleToken;
 // ⚠️ ⚠️ ⚠️ PASTE YOUR CLIENT ID HERE ⚠️ ⚠️ ⚠️
 const CLIENT_ID = '491759955863-ql4ljtsmdevkudobo6v8h2g0e5mmnh8j.apps.googleusercontent.com'; 
 // ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️
-const SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
+const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 const PROGRESS_FILE_NAME = 'typing_progress.json';
 let progressFileId = null; 
 // ------------------------------
@@ -112,7 +112,7 @@ bgSwatches.forEach(swatch => {
     swatch.addEventListener('click', () => {
         const bg = swatch.dataset.bg;
         let newBg;
-        if (bg === 'default') {
+        if (bg === 'none') {
             newBg = 'none';
             customBgInput.value = "";
         } else {
@@ -540,6 +540,8 @@ document.addEventListener('keydown', (event) => {
     }
     const accuracy = 100 - (errors / totalTyped) * 100;
     accuracyElement.textContent = `${accuracy.toFixed(0)}%`;
+    if (totalTyped % 100 === 0) saveProgress(); // auto-save every 100 keystrokes
+
 });
 
 
@@ -626,17 +628,36 @@ function onGoogleScriptLoad() {
         scope: SCOPES,
         callback: handleTokenResponse, 
     });
-    google.accounts.id.prompt(); 
+    google.accounts.id.prompt();
+        // ✅ Initialize Google Drive API client
+    if (window.gapi) {
+        gapi.load('client', async () => {
+            await gapi.client.init({
+                discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"]
+            });
+            console.log("✅ Google Drive API client loaded successfully.");
+        });
+    } else {
+        console.warn("⚠️ gapi not found — Drive sync will not work yet.");
+    }
 }
 function handleCredentialResponse(response) {
+    // Save credential token locally
+    localStorage.setItem('google_credential', response.credential);
+
+    // Decode JWT to get user info
     const profile = JSON.parse(atob(response.credential.split('.')[1]));
     userName.textContent = profile.name;
     userPicture.src = profile.picture;
+
     userInfo.classList.remove('hidden');
     allToggles.classList.remove('hidden');
     loginButton.classList.add('hidden');
+
+    // Get token for Drive access
     googleClient.requestAccessToken();
 }
+
 async function handleTokenResponse(tokenResponse) {
     googleToken = tokenResponse;
     console.log("Got access token!");
@@ -649,6 +670,8 @@ logoutButton.addEventListener('click', () => {
     userInfo.classList.add('hidden');
     allToggles.classList.add('hidden');
     loginButton.classList.remove('hidden');
+    localStorage.removeItem('google_credential');
+
     
     // Reset app state but don't save to cloud
     wpmHistory = [];
@@ -737,6 +760,11 @@ function applyAppState(state) {
     }
 }
 async function saveProgress() {
+    if (googleClient && (!googleToken || googleToken.expires_in < 60)) {
+    console.log("Refreshing Google token...");
+    googleClient.requestAccessToken();
+}
+
     // Save local settings anyway
     localStorage.setItem('darkMode', darkModeToggle.checked);
     localStorage.setItem('wordMode', wordModeToggle.checked);
@@ -745,10 +773,19 @@ async function saveProgress() {
     localStorage.setItem('customLetters', customLettersInput.value);
 
     // Stop here if not logged in
-    if (!googleToken || !progressFileId) {
-        console.log("Not logged in or no file ID, skipping cloud save.");
-        return; 
+    if (!googleToken) {
+    console.log("Not logged in, skipping cloud save.");
+    return;
+}
+if (!progressFileId) {
+    console.log("No progress file ID — creating one...");
+    progressFileId = await createProgressFile();
+    if (!progressFileId) {
+        console.error("Failed to create progress file, aborting save.");
+        return;
     }
+}
+
     const appState = getAppState();
     const content = JSON.stringify(appState);
     try {
@@ -772,7 +809,8 @@ async function saveProgress() {
 async function loadProgress() {
     if (!googleToken) return; 
     try {
-        const searchResponse = await fetch(`https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name='${PROGRESS_FILE_NAME}'`, {
+        const searchResponse = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${PROGRESS_FILE_NAME}'`,
+ {
             headers: { 'Authorization': `Bearer ${googleToken.access_token}` },
         });
         const searchResult = await searchResponse.json();
@@ -844,6 +882,22 @@ async function initializeApp() {
     renderLesson("Loading dictionary...", false);
     loadLocalSettings(); // Load local settings first
     await fetchDictionary();
+    // ✅ Restore saved login on refresh (before reinitializing Google)
+    const savedCredential = localStorage.getItem('google_credential');
+    if (savedCredential) {
+        const profile = JSON.parse(atob(savedCredential.split('.')[1]));
+        userName.textContent = profile.name;
+        userPicture.src = profile.picture;
+        userInfo.classList.remove('hidden');
+        allToggles.classList.remove('hidden');
+        loginButton.classList.add('hidden');
+
+        if (googleClient) {
+            googleClient.requestAccessToken();
+        } else {
+            console.warn("⚠️ Google client not initialized yet — will request after setup.");
+        }
+    }
     onGoogleScriptLoad(); // This will trigger login
     
     // Load a default lesson *now* for non-logged-in users.
