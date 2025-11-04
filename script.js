@@ -845,12 +845,19 @@ async function loadProgress() {
 }
 async function createProgressFile() {
     if (!googleToken) return null;
+
+    // ✅ Metadata for the progress file
     const metadata = {
         name: PROGRESS_FILE_NAME,
-        parents: ['appDataFolder'],
         mimeType: 'application/json'
+        // ⚠️ Removed "parents: ['appDataFolder']"
+        // because we are using 'drive.file' scope now, not 'drive.appdata'
     };
+
     try {
+        console.log("Creating new progress file...");
+
+        // ✅ Step 1: Create the empty file in user's normal Drive
         const response = await fetch('https://www.googleapis.com/drive/v3/files', {
             method: 'POST',
             headers: {
@@ -859,22 +866,46 @@ async function createProgressFile() {
             },
             body: JSON.stringify(metadata)
         });
-        if (response.ok) {
-            const newFile = await response.json();
-            progressFileId = newFile.id; 
-            console.log("New progress file created with ID:", progressFileId);
-            // Save the *current* settings to the new file
-            await saveProgress();
-            return newFile.id;
-        } else {
-            console.error("Failed to create progress file:", await response.json());
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("❌ Failed to create progress file:", errorText);
+            return null;
         }
+
+        const newFile = await response.json();
+        progressFileId = newFile.id; 
+        console.log("✅ New progress file created with ID:", progressFileId);
+
+        // ✅ Step 2: Immediately upload the current progress
+        const appState = getAppState();
+        const uploadResponse = await fetch(
+            `https://www.googleapis.com/upload/drive/v3/files/${progressFileId}?uploadType=media`,
+            {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${googleToken.access_token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(appState)
+            }
+        );
+
+        if (!uploadResponse.ok) {
+            const uploadError = await uploadResponse.text();
+            console.error("❌ Failed to upload initial progress:", uploadError);
+        } else {
+            console.log("✅ Initial progress uploaded successfully.");
+        }
+
+        return newFile.id;
+
     } catch (err) {
-        console.error("Error in createProgressFile:", err);
+        console.error("❌ Error in createProgressFile:", err);
+        return null;
     }
-    return null;
 }
-// --- End of Google Logic ---
+
 
 
 // --- Start the app ---
