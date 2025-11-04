@@ -112,7 +112,7 @@ bgSwatches.forEach(swatch => {
     swatch.addEventListener('click', () => {
         const bg = swatch.dataset.bg;
         let newBg;
-        if (bg === 'none') {
+        if (bg === 'default') {
             newBg = 'none';
             customBgInput.value = "";
         } else {
