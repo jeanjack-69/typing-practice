@@ -231,6 +231,11 @@ function loadLocalSettings() {
     if (savedCustomLetters) {
         customLettersInput.value = savedCustomLetters;
     }
+    const savedPdf = localStorage.getItem('defaultPdf');
+if (savedPdf) {
+    defaultPdfSelect.value = savedPdf;
+}
+
 }
 // --- End of Settings Panel Logic ---
 
@@ -495,6 +500,43 @@ fileInput.addEventListener('change', (event) => {
         renderLesson("File type not supported. Please upload .txt or .pdf", false);
     }
 });
+// 🆕 Default PDF Loader
+const defaultPdfSelect = document.getElementById('defaultPdfSelect');
+defaultPdfSelect.addEventListener('change', async (event) => {
+    const pdfUrl = event.target.value;
+    if (!pdfUrl) return; // No selection
+
+    renderLesson("Loading PDF... please wait...", false);
+    try {
+        const pdfResponse = await fetch(pdfUrl);
+        const arrayBuffer = await pdfResponse.arrayBuffer();
+
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let allText = '';
+        for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items.map(item => item.str).join(' ');
+            allText += pageText + ' ';
+        }
+
+        fullPracticeText = allText.toLowerCase()
+            .replace(/'/g, '')
+            .replace(/[^a-z\s]/gi, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        currentWordIndex = 0;
+        isPracticeMode = true;
+        practiceModeToggle.checked = true;
+        bodyElement.classList.add('file-mode-active');
+        loadNewLesson();
+    } catch (err) {
+        console.error("Error loading default PDF:", err);
+        renderLesson("Error: Could not read the default PDF.", false);
+    }
+});
+
 fileInput.addEventListener('click', () => {
     fileInput.value = null;
 });
@@ -503,11 +545,50 @@ fileInput.addEventListener('click', () => {
 // --- keydown event listener ---
 document.addEventListener('keydown', (event) => {
     const key = event.key;
-    if (key === ' ' && currentIndex === 0) {
-        event.preventDefault(); 
-        return; 
+    // --- Smart spacebar handler ---
+if (key === ' ') {
+    event.preventDefault();
+
+    // Store position before pressing space
+    const prevIndex = currentIndex;
+
+    // Let the app handle normal typing logic for the space
+    if (!lessonElement.children[currentIndex]) return;
+
+    const expectedLetter = lessonElement.children[currentIndex].textContent;
+
+    // If expected letter is actually a space, it's correct — advance cursor
+    if (expectedLetter === ' ') {
+        // Mark as correct
+        lessonElement.children[currentIndex].classList.add('correct');
+        lessonElement.children[currentIndex].classList.remove('current');
+        currentIndex++;
+
+        // Move cursor to next visible letter
+        if (lessonElement.children[currentIndex]) {
+            lessonElement.children[currentIndex].classList.add('current');
+        } else {
+            if (goalActive && goalType === "words") {
+        incrementWordCount();
     }
-    if (key === ' ') { event.preventDefault(); }
+            // Reached end of text
+            lessonFinished(true);
+        }
+    } else {
+        // Wrong space press
+        lessonElement.children[currentIndex].classList.add('incorrect');
+    }
+
+    // 🧠 Compare index positions to determine if word was actually completed
+    const movedForward = currentIndex > prevIndex;
+
+    if (goalActive && goalType === "words" && movedForward) {
+        incrementWordCount();
+    }
+
+    return;
+}
+
     if (!lessonElement.children[currentIndex]) { return; }
     const currentLetterSpan = lessonElement.children[currentIndex];
     const expectedLetter = currentLetterSpan.textContent;
@@ -771,6 +852,8 @@ async function saveProgress() {
     localStorage.setItem('practiceMode', practiceModeToggle.checked);
     localStorage.setItem('customLetterMode', customLetterToggle.checked);
     localStorage.setItem('customLetters', customLettersInput.value);
+    localStorage.setItem('defaultPdf', defaultPdfSelect ? defaultPdfSelect.value : '');
+
 
     // Stop here if not logged in
     if (!googleToken) {
@@ -936,5 +1019,126 @@ async function initializeApp() {
         loadNewLesson();
     }
 }
+// --- 🕒 Typing Goal System ---
+
+let goalActive = false;
+let goalType = "time"; // "time" or "words"
+let goalValue = 5;
+let goalInterval = null;
+let goalSecondsRemaining = 0;
+let totalWordsTyped = 0;
+
+// UI Elements
+const goalTypeSelect = document.getElementById("goalType");
+const goalValueInput = document.getElementById("goalValue");
+const startGoalBtn = document.getElementById("startGoalBtn");
+const stopGoalBtn = document.getElementById("stopGoalBtn");
+const goalTimerDisplay = document.getElementById("goalTimer");
+const goalInfo = document.getElementById("goalInfo");
+
+if (goalTypeSelect && goalValueInput && startGoalBtn && stopGoalBtn) {
+    goalTypeSelect.addEventListener("change", () => {
+        goalType = goalTypeSelect.value;
+    });
+
+    startGoalBtn.addEventListener("click", () => {
+        if (goalActive) return;
+        goalType = goalTypeSelect.value;
+        goalValue = parseInt(goalValueInput.value);
+
+        if (isNaN(goalValue) || goalValue <= 0) {
+            alert("Please enter a valid goal value!");
+            return;
+        }
+
+        goalActive = true;
+        updateGoalProgress(0, 1);
+
+        startGoalBtn.disabled = true;
+        stopGoalBtn.disabled = false;
+        totalWordsTyped = 0;
+
+        if (goalType === "time") {
+            goalSecondsRemaining = goalValue * 60;
+            updateGoalTimer();
+            goalInfo.textContent = `Goal: ${goalValue} minute${goalValue > 1 ? 's' : ''}`;
+            goalInterval = setInterval(() => {
+                goalSecondsRemaining--;
+                updateGoalTimer();
+                updateGoalProgress(goalValue * 60 - goalSecondsRemaining, goalValue * 60);
+                if (goalSecondsRemaining <= 0) stopGoal(true);
+            }, 1000);
+        } else {
+            goalInfo.textContent = `Goal: ${goalValue} words`;
+            goalTimerDisplay.textContent = "--:--";
+        }
+
+        console.log("Goal started:", goalType, goalValue);
+    });
+
+    stopGoalBtn.addEventListener("click", () => {
+        stopGoal(false);
+    });
+}
+
+function updateGoalTimer() {
+    const minutes = Math.floor(goalSecondsRemaining / 60);
+    const seconds = goalSecondsRemaining % 60;
+    goalTimerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+function stopGoal(completed) {
+    goalActive = false;
+    clearInterval(goalInterval);
+    startGoalBtn.disabled = false;
+    stopGoalBtn.disabled = true;
+
+    if (completed) {
+        goalInfo.textContent = "🎉 Goal completed! Great job!";
+        goalTimerDisplay.textContent = "00:00";
+    } else {
+        goalInfo.textContent = "⏹ Goal stopped.";
+    }
+
+    console.log("Goal stopped", completed ? "(completed)" : "");
+    updateGoalProgress(0, 1);
+}
+
+// Call this function whenever the user completes a word
+function incrementWordCount() {
+    if (!goalActive || goalType !== "words") return;
+    totalWordsTyped++;
+    goalInfo.textContent = `Goal: ${totalWordsTyped} / ${goalValue} words`;
+    updateGoalProgress(totalWordsTyped, goalValue);
+
+    if (totalWordsTyped >= goalValue) stopGoal(true);
+}
+// --- 🟩 Fancy Vertical Goal Progress Bar + Live % Label ---
+const goalProgress = document.getElementById("goalProgressFill");
+const goalPercentLabel = document.getElementById("goalPercent");
+
+function updateGoalProgress(current = 0, total = 1) {
+    if (!goalProgress) return;
+    const percent = Math.min(100, (current / total) * 100);
+
+    // Fill the bar vertically
+    goalProgress.style.height = percent + "%";
+
+    // Update the % label text and position
+    if (goalPercentLabel) {
+        goalPercentLabel.textContent = Math.round(percent) + "%";
+
+        // Optional: fade color from red → yellow → green
+        const hue = Math.round((percent / 100) * 120); // 0=red,120=green
+        goalPercentLabel.style.color = `hsl(${hue}, 80%, 60%)`;
+
+        // Keep the label slightly above the filled edge
+        goalPercentLabel.style.bottom = (percent > 15 ? "5px" : "0px");
+    }
+}
+
+
+
+
 
 initializeApp();

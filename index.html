@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Typing Practice</title>
+    <title>Jean_Jack Ty-Practice</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Fira+Code&family=Roboto+Mono&family=Inconsolata&family=Source+Code+Pro&family=Ubuntu+Mono&family=IBM+Plex+Mono&family=Cascadia+Code&family=Anonymous+Pro&family=Inter&family=Poppins&family=Montserrat&family=Open+Sans&display=swap" rel="stylesheet">
+
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -85,17 +90,63 @@
         <div class="settings-group">
             <label for="fontSelect">Font Family:</label>
             <select id="fontSelect">
+    <!-- Monospaced fonts (great for typing) -->
                 <option value="'Courier New', Courier, monospace">Courier New</option>
                 <option value="'Roboto Mono', monospace">Roboto Mono</option>
+                <option value="'JetBrains Mono', monospace">JetBrains Mono</option>
+                <option value="'Fira Code', monospace">Fira Code</option>
                 <option value="'Inconsolata', monospace">Inconsolata</option>
                 <option value="'Source Code Pro', monospace">Source Code Pro</option>
+                <option value="'Ubuntu Mono', monospace">Ubuntu Mono</option>
+                <option value="'IBM Plex Mono', monospace">IBM Plex Mono</option>
+                <option value="'Cascadia Code', monospace">Cascadia Code</option>
+                <option value="'Anonymous Pro', monospace">Anonymous Pro</option>
+
+    <!-- Clean sans-serif alternatives -->
+                <option value="'Inter', sans-serif">Inter</option>
+                <option value="'Poppins', sans-serif">Poppins</option>
+                <option value="'Montserrat', sans-serif">Montserrat</option>
+                <option value="'Open Sans', sans-serif">Open Sans</option>
             </select>
+
         </div>
         <div class="settings-group">
             <label for="fontSizeSlider">Font Size: <span id="fontSizeValue">28px</span></label>
             <input type="range" id="fontSizeSlider" min="20" max="40" value="28">
         </div>
     </div>
+    <!-- 🧭 Floating Goal Tracker Panel -->
+<div id="goalPanel">
+    <h4>Goal</h4>
+    <div class="settings-group" id="goal-section">
+        <label for="goalType">Type:</label>
+        <select id="goalType">
+            <option value="time">Time</option>
+            <option value="words">Words</option>
+        </select>
+    </div>
+    <div class="settings-group">
+        <label for="goalValue">Set:</label>
+        <input type="number" id="goalValue" min="1" max="180" value="5">
+    </div>
+    <div class="settings-group" id="goal-controls">
+        <button id="startGoalBtn">🎯</button>
+        <button id="stopGoalBtn" disabled>⏹</button>
+    </div>
+    <div id="goalStatus">
+        <p id="goalInfo">No goal</p>
+        <h2 id="goalTimer">00:00</h2>
+    </div>
+    <div id="goalProgress">
+    <div id="goalProgressFill">
+        <span id="goalPercent">0%</span>
+    </div>
+</div>
+
+</div>
+
+
+
     <h1>Start Typing!</h1>
 
     <div class="stats">
@@ -118,6 +169,19 @@
             <label for="fileInput">Upload .txt or .pdf:</label>
             <input type="file" id="fileInput" accept=".txt,.pdf">
         </div>
+        <!-- 🆕 Default PDF selector -->
+<div id="defaultPdfContainer">
+    <label for="defaultPdfSelect">Or choose a default PDF:</label>
+    <select id="defaultPdfSelect">
+        <option value="">-- Select PDF --</option>
+        <option value="pdfs/sample1.pdf">Atomic Habits</option>
+        <option value="pdfs/sample2.pdf">Men are from Mars</option>
+        <option value="pdfs/sample3.pdf">The One You Cant Have</option>
+        <option value="pdfs/sample4.pdf">Psychology of Money</option>
+        <option value="pdfs/sample5.pdf">You Were My Crush</option>
+    </select>
+</div>
+
         <div class="toggle-container" id="customLetterToggleContainer">
             <span>Default Lessons</span>
             <input type="checkbox" id="customLetterToggle" class="toggle-checkbox">
@@ -140,5 +204,10 @@
     </div>
 
     <script src="script.js"></script>
+    <!-- 🧠 Footer Section -->
+<footer id="appFooter">
+    Developed & Managed By : <span class="dev-name">Jayanta Sardar</span>
+</footer>
+
 </body>
 </html>
